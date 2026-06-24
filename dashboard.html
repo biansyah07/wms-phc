@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WMS PHC — Dashboard</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+    body { background: #f1f5f9; min-height: 100vh; display: flex; }
+
+    /* SIDEBAR */
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #1e1b4b, #4338ca);
+      color: #fff;
+      padding: 20px 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-logo h1 { font-size: 18px; }
+    .sidebar-logo p { font-size: 11px; opacity: 0.6; margin-top: 4px; }
+    .nav-item {
+      display: block;
+      padding: 12px 20px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      transition: 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .nav-item.active { background: rgba(255,255,255,0.15); color: #fff; border-left-color: #818cf8; }
+    .nav-label { padding: 16px 20px 8px; font-size: 10px; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* MAIN */
+    .main { margin-left: 250px; flex: 1; }
+    .topbar {
+      background: #fff;
+      padding: 16px 30px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .topbar h2 { font-size: 18px; color: #1e293b; }
+    .user-box { display: flex; align-items: center; gap: 12px; }
+    .user-avatar {
+      width: 36px; height: 36px;
+      background: #4338ca;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+    .btn-logout {
+      padding: 8px 16px;
+      background: #ef4444;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .btn-logout:hover { background: #dc2626; }
+
+    /* CONTENT */
+    .content { padding: 30px; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      border-left: 4px solid #4338ca;
+    }
+    .stat-icon { font-size: 32px; margin-bottom: 10px; }
+    .stat-value { font-size: 32px; font-weight: 700; color: #1e293b; }
+    .stat-label { color: #64748b; font-size: 13px; margin-top: 4px; }
+    .stat-card.green { border-left-color: #10b981; }
+    .stat-card.orange { border-left-color: #f59e0b; }
+    .stat-card.red { border-left-color: #ef4444; }
+
+    .welcome-card {
+      background: linear-gradient(135deg, #4338ca, #6366f1);
+      color: #fff;
+      padding: 30px;
+      border-radius: 16px;
+      margin-bottom: 30px;
+    }
+    .welcome-card h1 { font-size: 24px; margin-bottom: 8px; }
+    .welcome-card p { opacity: 0.9; font-size: 14px; }
+
+    .card {
+      background: #fff;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .card h3 { font-size: 16px; margin-bottom: 16px; color: #1e293b; }
+
+    @media (max-width: 768px) {
+      .sidebar { transform: translateX(-100%); transition: 0.3s; z-index: 100; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>🏭 WMS PHC</h1>
+      <p>Warehouse System</p>
+    </div>
+
+    <div class="nav-label">Main</div>
+    <a href="dashboard.html" class="nav-item active">📊 Dashboard</a>
+    <a href="inventory.html" class="nav-item">📦 Inventory</a>
+
+    <div class="nav-label">Transaksi</div>
+    <a href="inbound.html" class="nav-item">📥 Barang Masuk</a>
+    <a href="outbound.html" class="nav-item">📤 Barang Keluar</a>
+
+    <div class="nav-label">Lainnya</div>
+    <a href="#" class="nav-item">📍 Lokasi Gudang</a>
+    <a href="#" class="nav-item">📋 Reports</a>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="main">
+    <header class="topbar">
+      <h2>📊 Dashboard</h2>
+      <div class="user-box">
+        <div class="user-avatar" id="userInitial">?</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;" id="userEmail">Loading...</div>
+          <div style="font-size:11px;color:#64748b;">Administrator</div>
+        </div>
+        <button class="btn-logout" onclick="doLogout()">🚪 Logout</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- WELCOME -->
+      <div class="welcome-card">
+        <h1>🎉 Selamat Datang di WMS PHC!</h1>
+        <p>Sistem manajemen gudang Anda siap digunakan.</p>
+      </div>
+
+      <!-- STATS -->
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">📦</div>
+          <div class="stat-value" id="totalSKU">0</div>
+          <div class="stat-label">Total SKU</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon">🔢</div>
+          <div class="stat-value" id="totalQty">0</div>
+          <div class="stat-label">Total Quantity</div>
+        </div>
+        <div class="stat-card orange">
+          <div class="stat-icon">📥</div>
+          <div class="stat-value" id="totalIn">0</div>
+          <div class="stat-label">Inbound Hari Ini</div>
+        </div>
+        <div class="stat-card red">
+          <div class="stat-icon">📤</div>
+          <div class="stat-value" id="totalOut">0</div>
+          <div class="stat-label">Outbound Hari Ini</div>
+        </div>
+      </div>
+
+      <!-- STATUS -->
+      <div class="card">
+        <h3>🚀 Status Sistem</h3>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr style="border-bottom:1px solid #e2e8f0;">
+            <td style="padding:12px 0;">🔥 Firebase Connection</td>
+            <td style="padding:12px 0;text-align:right;color:#10b981;font-weight:600;" id="firebaseStatus">✅ Connected</td>
+          </tr>
+          <tr style="border-bottom:1px solid #e2e8f0;">
+            <td style="padding:12px 0;">🔐 Authentication</td>
+            <td style="padding:12px 0;text-align:right;color:#10b981;font-weight:600;">✅ Active</td>
+          </tr>
+          <tr style="border-bottom:1px solid #e2e8f0;">
+            <td style="padding:12px 0;">📦 Firestore Database</td>
+            <td style="padding:12px 0;text-align:right;color:#10b981;font-weight:600;" id="dbStatus">⏳ Checking...</td>
+          </tr>
+          <tr>
+            <td style="padding:12px 0;">🌍 Region</td>
+            <td style="padding:12px 0;text-align:right;color:#64748b;">Singapore / Jakarta</td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- NEXT STEPS -->
+      <div class="card">
+        <h3>✅ Selanjutnya:</h3>
+        <ol style="padding-left:20px;line-height:2;color:#475569;">
+          <li>Buat halaman <strong>Inventory</strong> untuk daftar barang</li>
+          <li>Buat halaman <strong>Inbound</strong> untuk barang masuk</li>
+          <li>Buat halaman <strong>Outbound</strong> untuk barang keluar</li>
+          <li>Upload ke <strong>GitHub Pages</strong> agar bisa diakses dari mana saja</li>
+        </ol>
+      </div>
+
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBQVypmRmNQKiz_-KFYDKQTY8x-8S9FTR4",
+      authDomain: "logistic-system-phc.firebaseapp.com",
+      projectId: "logistic-system-phc",
+      storageBucket: "logistic-system-phc.firebasestorage.app",
+      messagingSenderId: "316718626582",
+      appId: "1:316718626582:web:3745ae3bef5df297d00237",
+      measurementId: "G-XTDXXKE49R"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // Auth guard
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "index.html";
+      } else {
+        document.getElementById('userEmail').textContent = user.email;
+        document.getElementById('userInitial').textContent = user.email.charAt(0).toUpperCase();
+        testDatabase();
+      }
+    });
+
+    // Test database connection
+    async function testDatabase() {
+      try {
+        const snap = await getDocs(collection(db, "inventory"));
+        document.getElementById('dbStatus').textContent = '✅ Connected';
+        document.getElementById('dbStatus').style.color = '#10b981';
+        document.getElementById('totalSKU').textContent = snap.size;
+      } catch(e) {
+        document.getElementById('dbStatus').textContent = '⚠️ ' + e.message.substring(0, 30);
+        document.getElementById('dbStatus').style.color = '#f59e0b';
+      }
+    }
+
+    window.doLogout = async function() {
+      if (confirm('Yakin mau logout?')) {
+        await signOut(auth);
+        window.location.href = "index.html";
+      }
+    };
+  </script>
+
+</body>
+</html>

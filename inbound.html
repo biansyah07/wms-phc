@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WMS PHC — Barang Masuk</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Arial, sans-serif; }
+    body { background: #f1f5f9; min-height: 100vh; display: flex; }
+
+    .sidebar {
+      width: 250px;
+      background: linear-gradient(180deg, #1e1b4b, #4338ca);
+      color: #fff;
+      padding: 20px 0;
+      position: fixed;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .sidebar-logo { padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-logo h1 { font-size: 18px; }
+    .sidebar-logo p { font-size: 11px; opacity: 0.6; margin-top: 4px; }
+    .nav-item {
+      display: block;
+      padding: 12px 20px;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      transition: 0.2s;
+      border-left: 3px solid transparent;
+    }
+    .nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .nav-item.active { background: rgba(255,255,255,0.15); color: #fff; border-left-color: #818cf8; }
+    .nav-label { padding: 16px 20px 8px; font-size: 10px; opacity: 0.4; text-transform: uppercase; letter-spacing: 1px; }
+
+    .main { margin-left: 250px; flex: 1; }
+    .topbar {
+      background: #fff;
+      padding: 16px 30px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .topbar h2 { font-size: 18px; color: #1e293b; }
+    .user-box { display: flex; align-items: center; gap: 12px; }
+    .user-avatar {
+      width: 36px; height: 36px;
+      background: #4338ca;
+      color: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+    }
+    .btn { padding: 10px 18px; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; transition: 0.2s; }
+    .btn-success { background: #10b981; color: #fff; }
+    .btn-success:hover { background: #059669; }
+    .btn-outline { background: transparent; border: 1.5px solid #cbd5e1; color: #475569; }
+    .btn-outline:hover { background: #f1f5f9; }
+    .btn-logout { background: #ef4444; color: #fff; padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
+
+    .content { padding: 30px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1.3fr; gap: 20px; }
+    @media (max-width: 1024px) { .grid-2 { grid-template-columns: 1fr; } }
+
+    .card {
+      background: #fff;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .card-header h3 { font-size: 15px; }
+    .card-body { padding: 22px; }
+
+    .form-group { margin-bottom: 14px; }
+    .form-group label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 6px;
+    }
+    .form-group label span { color: #ef4444; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 10px 14px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #10b981;
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th {
+      background: #f8fafc;
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 2px solid #e2e8f0;
+    }
+    td {
+      padding: 12px 16px;
+      font-size: 13px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    tr:hover td { background: #f8fafc; }
+
+    .badge { padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 600; }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-info { background: #dbeafe; color: #1e40af; }
+
+    .toast-container { position: fixed; top: 20px; right: 20px; z-index: 9999; }
+    .toast {
+      padding: 12px 20px;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideIn 0.3s ease;
+    }
+    .toast-success { background: #10b981; }
+    .toast-error { background: #ef4444; }
+    .toast-warning { background: #f59e0b; }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } }
+
+    .empty { text-align: center; padding: 40px 20px; color: #94a3b8; }
+    .stat-mini {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      padding: 18px 22px;
+      border-radius: 12px;
+      margin-bottom: 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stat-mini h2 { font-size: 32px; }
+    .stat-mini p { font-size: 13px; opacity: 0.9; }
+  </style>
+</head>
+<body>
+
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <h1>🏭 WMS PHC</h1>
+      <p>Warehouse System</p>
+    </div>
+    <div class="nav-label">Main</div>
+    <a href="dashboard.html" class="nav-item">📊 Dashboard</a>
+    <a href="inventory.html" class="nav-item">📦 Inventory</a>
+    <div class="nav-label">Transaksi</div>
+    <a href="inbound.html" class="nav-item active">📥 Barang Masuk</a>
+    <a href="outbound.html" class="nav-item">📤 Barang Keluar</a>
+    <div class="nav-label">Lainnya</div>
+    <a href="#" class="nav-item">📍 Lokasi Gudang</a>
+    <a href="#" class="nav-item">📋 Reports</a>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <h2>📥 Barang Masuk (Inbound)</h2>
+      <div class="user-box">
+        <div class="user-avatar" id="userInitial">?</div>
+        <div>
+          <div style="font-size:13px;font-weight:600;" id="userEmail">Loading...</div>
+          <div style="font-size:11px;color:#64748b;">Administrator</div>
+        </div>
+        <button class="btn-logout" onclick="doLogout()">🚪 Logout</button>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <div class="grid-2">
+
+        <!-- FORM INBOUND -->
+        <div>
+          <div class="stat-mini">
+            <div>
+              <p>Transaksi Hari Ini</p>
+              <h2 id="todayCount">0</h2>
+            </div>
+            <div style="font-size:60px;opacity:0.3;">📥</div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3>📝 Form Barang Masuk</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-group">
+                <label>Part Number <span>*</span></label>
+                <input type="text" id="partNo" placeholder="Contoh: PRT-001" oninput="this.value=this.value.toUpperCase()">
+              </div>
+              <div class="form-group">
+                <label>Nama Barang <span>*</span></label>
+                <input type="text" id="partName" placeholder="Contoh: Bearing 6203">
+              </div>
+              <div class="form-group">
+                <label>Lokasi Simpan <span>*</span></label>
+                <input type="text" id="location" placeholder="Contoh: A-01-01" oninput="this.value=this.value.toUpperCase()">
+              </div>
+              <div class="form-group">
+                <label>Quantity <span>*</span></label>
+                <input type="number" id="qty" placeholder="0" min="1">
+              </div>
+              <div class="form-group">
+                <label>Supplier</label>
+                <input type="text" id="supplier" placeholder="Nama supplier">
+              </div>
+              <div class="form-group">
+                <label>No PO</label>
+                <input type="text" id="poNumber" placeholder="Nomor PO">
+              </div>
+              <div class="form-group">
+                <label>Catatan</label>
+                <input type="text" id="note" placeholder="Catatan opsional">
+              </div>
+              <button class="btn btn-success" onclick="submitInbound()" style="width:100%;padding:14px;">
+                💾 Simpan Barang Masuk
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- HISTORY -->
+        <div class="card">
+          <div class="card-header">
+            <h3>📋 Riwayat Barang Masuk</h3>
+            <button class="btn btn-outline" onclick="loadHistory()">🔄 Refresh</button>
+          </div>
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Part No</th>
+                  <th>Nama</th>
+                  <th>Lokasi</th>
+                  <th>Qty</th>
+                  <th>Supplier</th>
+                </tr>
+              </thead>
+              <tbody id="historyBody">
+                <tr><td colspan="6" class="empty">Loading...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, query, where, doc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBQVypmRmNQKiz_-KFYDKQTY8x-8S9FTR4",
+      authDomain: "logistic-system-phc.firebaseapp.com",
+      projectId: "logistic-system-phc",
+      storageBucket: "logistic-system-phc.firebasestorage.app",
+      messagingSenderId: "316718626582",
+      appId: "1:316718626582:web:3745ae3bef5df297d00237",
+      measurementId: "G-XTDXXKE49R"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let currentUser = null;
+
+    onAuthStateChanged(auth, user => {
+      if (!user) {
+        window.location.href = "index.html";
+      } else {
+        currentUser = user;
+        document.getElementById('userEmail').textContent = user.email;
+        document.getElementById('userInitial').textContent = user.email.charAt(0).toUpperCase();
+        loadHistory();
+      }
+    });
+
+    window.submitInbound = async function() {
+      const data = {
+        partNo: document.getElementById('partNo').value.trim().toUpperCase(),
+        partName: document.getElementById('partName').value.trim(),
+        location: document.getElementById('location').value.trim().toUpperCase(),
+        qty: Number(document.getElementById('qty').value),
+        supplier: document.getElementById('supplier').value.trim(),
+        poNumber: document.getElementById('poNumber').value.trim(),
+        note: document.getElementById('note').value.trim()
+      };
+
+      if (!data.partNo || !data.partName || !data.location || !data.qty || data.qty <= 0) {
+        showToast('⚠️ Isi semua field wajib (*) dengan benar!', 'warning');
+        return;
+      }
+
+      try {
+        // 1. Simpan ke inbound
+        await addDoc(collection(db, "inbound"), {
+          ...data,
+          createdBy: currentUser.email,
+          createdAt: serverTimestamp()
+        });
+
+        // 2. Update / create inventory
+        const invSnap = await getDocs(query(
+          collection(db, "inventory"),
+          where("partNo", "==", data.partNo),
+          where("location", "==", data.location)
+        ));
+
+        if (invSnap.empty) {
+          await addDoc(collection(db, "inventory"), {
+            partNo: data.partNo,
+            partName: data.partName,
+            location: data.location,
+            qty: data.qty,
+            minStock: 10,
+            createdAt: serverTimestamp(),
+            lastUpdate: serverTimestamp()
+          });
+        } else {
+          const docRef = invSnap.docs[0];
+          const currentQty = Number(docRef.data().qty) || 0;
+          await updateDoc(doc(db, "inventory", docRef.id), {
+            qty: currentQty + data.qty,
+            lastUpdate: serverTimestamp()
+          });
+        }
+
+        showToast('✅ Barang masuk berhasil dicatat!', 'success');
+        clearForm();
+        loadHistory();
+
+      } catch(e) {
+        showToast('❌ Error: ' + e.message, 'error');
+      }
+    };
+
+    async function loadHistory() {
+      try {
+        const snap = await getDocs(collection(db, "inbound"));
+        const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        data.sort((a, b) => {
+          const da = a.createdAt?.toDate ? a.createdAt.toDate() : new Date(0);
+          const db = b.createdAt?.toDate ? b.createdAt.toDate() : new Date(0);
+          return db - da;
+        });
+
+        const today = new Date().toISOString().substring(0, 10);
+        const todayCount = data.filter(d => {
+          const dt = d.createdAt?.toDate ? d.createdAt.toDate() : new Date(0);
+          return dt.toISOString().substring(0, 10) === today;
+        }).length;
+
+        document.getElementById('todayCount').textContent = todayCount;
+
+        const tbody = document.getElementById('historyBody');
+        if (data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" class="empty">📭 Belum ada riwayat</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = data.slice(0, 20).map(d => {
+          const dt = d.createdAt?.toDate ? d.createdAt.toDate() : new Date();
+          const dateStr = dt.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+          return `<tr>
+            <td><small>${dateStr}</small></td>
+            <td><strong>${d.partNo}</strong></td>
+            <td>${d.partName || '-'}</td>
+            <td><span class="badge badge-info">📍 ${d.location}</span></td>
+            <td style="font-weight:700;color:#10b981;">+${d.qty}</td>
+            <td>${d.supplier || '-'}</td>
+          </tr>`;
+        }).join('');
+      } catch(e) {
+        document.getElementById('historyBody').innerHTML = '<tr><td colspan="6" class="empty">❌ Error: ' + e.message + '</td></tr>';
+      }
+    }
+
+    window.loadHistory = loadHistory;
+
+    function clearForm() {
+      ['partNo','partName','location','qty','supplier','poNumber','note'].forEach(id => {
+        document.getElementById(id).value = '';
+      });
+    }
+
+    window.doLogout = async function() {
+      if (confirm('Yakin mau logout?')) {
+        await signOut(auth);
+        window.location.href = "index.html";
+      }
+    };
+
+    function showToast(msg, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = 'toast toast-' + type;
+      toast.textContent = msg;
+      document.getElementById('toastContainer').appendChild(toast);
+      setTimeout(() => toast.remove(), 3500);
+    }
+  </script>
+
+</body>
+</html>
